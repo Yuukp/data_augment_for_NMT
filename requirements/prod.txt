@@ -1,0 +1,6 @@
+pandas
+mecab-python
+sentencepiece
+tensor2tensor
+tensorflow
+tiny_tokenizer[all]

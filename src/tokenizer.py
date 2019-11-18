@@ -1,5 +1,6 @@
 import os
 import sentencepiece as spm
+from tiny_tokenizer import WordTokenizer
 
 class Tokenizer:
 	def __init__(self):
@@ -48,7 +49,8 @@ class Tokenizer:
         while(ja_line):
             if os.path.exists(self.ja_spm_path):
                 sp = self.ja_sp
-                for word in sp.EncodeAsPieces(ja_line.strip())[1:]:
+				tokenizer = WordTokenizer('Sentencepiece', model_path=self.ja_spm_path)
+                for word in tokenizer.tokenize(ja_line.strip())[1:]:
                     if word in ja_vocab.keys():
                         ja_vocab[word] += 1
                     else:
@@ -60,12 +62,10 @@ class Tokenizer:
         en_vocab = {}
         f = open(en_file)
         en_line = f.readline()
-            if os.path.exists(self.en_spm_path):
-                sp = self.en_sp
-                for word in sp.EncodeAsPieces(en_line.strip())[1:]:
-                    if word in en_vocab.keys():
-                        en_vocab[word] += 1
-                    else:
-                        en_vocab[word] = 1
+            for word in en_line.strip():
+                if word in en_vocab.keys():
+                    en_vocab[word] += 1
+                else:
+                    en_vocab[word] = 1
         f.close()
         return en_vocab

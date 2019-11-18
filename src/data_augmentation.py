@@ -4,6 +4,7 @@ from tokenizer import Tokenizer
 from prepare_data import PrepareData 
 import requests
 from bs4 import BeautifulSoup
+from tiny_tokenizer import WordTokenizer
 
 #freqが50未満の単語リストを作成
 def rare_vocab_create(vocab_dic):
@@ -43,7 +44,7 @@ class DataAugmentation:
         self.trg_vocab = Tokenizer.ja_vocab_create()
 
 
-    def add_aux_corpus(self, file_to_read):
+    def add_aux_corpus(self):
         src_rare_vocab = rare_vocab_create(self.src_vocab)
         trg_rare_vocab = rare_vocab_create(self.trg_vocab)
         
@@ -56,7 +57,7 @@ class DataAugmentation:
             aux_taiyaku.append(scraping(trg, "ja"))
 
         aux_corpus = './../data/aux_taiyaku.tsv'
-        f = open(aux_corpus, 'a')
+        f = open(aux_corpus, 'w')
         for s in aux_taiyaku:
             f.write(s+'\n')
         f.close()
@@ -80,7 +81,18 @@ class DataAugmentation:
             if no_use_trg_vocab[i] in self.trg_vocab.keys():
                 del no_use_trg_vocab[i]
 
+        no_use_vocab = no_use_src_vocab + no_use_trg_vocab
+        for j in range(len(aux_taiyaku)):
+            for word in no_use_vocab:
+                if word in aux_taiyaku[j]:
+                    del aux_taiyaku[j]
+                    break
+
         f = open(aux_corpus, 'w')
+        for s in aux_taiyaku:
+            f.write(s+'\n')
+        f.close()
 
-        #トレーニングデータセットにaux_corpusを追加
-
+        #トレーニングデータにaux_corpusを追加
+        PrepareData.extract_each_sentence(aux_corpus, './../data/ja_sentences.tsv', 'ja')
+        PrepareData.extract_each_sentence(aux_corpus, './../data/en_sentences.tsv', 'en')
